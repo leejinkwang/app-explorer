@@ -230,6 +230,21 @@ Claude: "I'll scrape the pricing table"
   → (optional) send_notification with summary
 ```
 
+### HTML-to-PDF Export Flow
+
+```
+Claude: "I'll save all lecture chapters as PDF"
+  → browser_scrape_links {selector: "#toc a", pattern: "I_\\d+\\.html"}
+  → request_confirmation("Save 52 pages as PDF")
+  → User approves
+  → For each chapter URL:
+     → browser_navigate {url: "https://.../I_01.html"}
+     → browser_save_as_pdf {filename: "I_01_Atoms_in_Motion.pdf", wait_for_selector: ".mathjax"}
+     → Worker renders page to PDF via Playwright page.pdf()
+     → Worker uploads PDF to Controller
+  → finish_task with summary
+```
+
 ---
 
 ## Synchronization
