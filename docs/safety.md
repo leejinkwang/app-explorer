@@ -11,6 +11,8 @@ In task mode, Claude can perform actions that change state. Dangerous actions re
 | **Screenshots, DOM reads, navigation** | None | ❌ Never |
 | **Single file download (<10MB)** | Low | ❌ No |
 | **Batch download (>5 files or >50MB)** | Medium | ✅ Yes |
+| **Batch PDF export (>5 pages)** | Medium | ✅ Yes |
+| **Single PDF export** | Low | ❌ No |
 | **Form submission** | Medium | ✅ Yes |
 | **Login (via perform_login)** | Low | ❌ No (pre-authorized by user) |
 | **Send webhook/notification** | Low | ❌ No (pre-configured by user) |
