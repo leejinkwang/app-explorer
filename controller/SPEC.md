@@ -131,7 +131,7 @@ Worker polling server on :5901. Same sync mechanism (Queue + Event) with added `
 | | Explore | Task |
 |---|---|---|
 | **App** | 13 tools | 16+ tools |
-| **Browser** | 18 tools | 30+ tools |
+| **Browser** | 18 tools | 31+ tools |
 
 ### Explore — App (13)
 
@@ -160,6 +160,7 @@ All explore-browser tools PLUS task-app tools PLUS:
 |------|-------|---------|
 | `browser_download` | `{url, filename?}` | Worker |
 | `browser_download_batch` | `{urls: [{url, filename?}]}` | Worker |
+| `browser_save_as_pdf` | `{filename?, wait_for_selector?, margin?, format?, landscape?}` | Worker |
 | `browser_scrape_links` | `{selector?, pattern?, attribute?}` | Worker |
 | `browser_scrape_table` | `{selector, format?}` | Worker |
 | `browser_scrape_text` | `{selectors: [{name, selector}]}` | Worker |
@@ -177,6 +178,7 @@ Claude returns tool_use
   └─ WORKER TOOLS (forwarded via put_command):
       ├─ *screenshot → image block to Claude
       ├─ *download*  → Worker downloads + uploads → metadata to Claude
+      ├─ *save_as_pdf → Worker renders PDF + uploads → metadata to Claude
       └─ Others      → JSON text to Claude
 ```
 
@@ -259,11 +261,12 @@ Execute the user's task through the available tools.
 2. If credentials provided: call perform_login FIRST
 3. For risky actions (batch downloads, form submissions): call request_confirmation
 4. Download workflow: browser_scrape_links → request_confirmation → browser_download_batch
-5. Scraping workflow: browser_get_dom → browser_scrape_table/text → save_file
-6. Form workflow: browser_fill_form → request_confirmation → browser_submit_form
-7. Report progress via save_note
-8. Call finish_task when done
-9. Use send_notification for long tasks
+5. PDF export workflow: navigate to page → browser_save_as_pdf (for HTML→PDF conversion)
+6. Scraping workflow: browser_get_dom → browser_scrape_table/text → save_file
+7. Form workflow: browser_fill_form → request_confirmation → browser_submit_form
+8. Report progress via save_note
+9. Call finish_task when done
+10. Use send_notification for long tasks
 
 ## CSS Selectors: #id, .class, tag, [attr], text=..., :has-text(...)
 ```
