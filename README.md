@@ -102,11 +102,14 @@ app-explorer/
 │   └── requirements.txt
 ├── controller/
 │   ├── SPEC.md
+│   ├── TEAM_SPEC.md                         ← Team management spec
 │   ├── controller.py
 │   ├── api_server.py
 │   ├── agent.py
 │   ├── command_queue.py
 │   ├── session.py
+│   ├── team.py                              ← Team manager (CRUD + members)
+│   ├── team_api.py                          ← Team REST API endpoints
 │   ├── config.yaml
 │   └── requirements.txt
 └── worker/
@@ -178,4 +181,5 @@ Then in Claude Code:
 | [mcp/SPEC.md](mcp/SPEC.md) | MCP tools, Claude Code config, interaction flow |
 | [console/SPEC.md](console/SPEC.md) | REPL, confirmation UI, file downloads |
 | [controller/SPEC.md](controller/SPEC.md) | REST API, agent loop, all tools, webhooks, config |
+| [controller/TEAM_SPEC.md](controller/TEAM_SPEC.md) | Team management, roles, member API |
 | [worker/SPEC.md](worker/SPEC.md) | App + browser + download + scrape commands |

@@ -58,6 +58,21 @@ Both modes use the same protocol. Task mode unlocks additional tools and relaxes
 | GET | `/sessions/:id/confirmation` | Check if confirmation is pending |
 | POST | `/sessions/:id/confirmation` | Respond (approve/deny) |
 
+### Team Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/teams` | Create a new team |
+| GET | `/teams` | List all teams (filter: `?user_id=...`) |
+| GET | `/teams/:id` | Get team details |
+| PUT | `/teams/:id` | Update team (name, description, settings) |
+| DELETE | `/teams/:id` | Delete a team |
+| GET | `/teams/:id/members` | List team members |
+| POST | `/teams/:id/members` | Add a member |
+| PUT | `/teams/:id/members/:user_id` | Update member role |
+| DELETE | `/teams/:id/members/:user_id` | Remove a member |
+| POST | `/teams/:id/transfer-ownership` | Transfer team ownership |
+
 ### System Endpoints
 
 | Method | Path | Description |
@@ -108,6 +123,51 @@ Both modes use the same protocol. Task mode unlocks additional tools and relaxes
 
 ```json
 {"confirmation_id": "conf_001", "approved": true}
+```
+
+### `POST /teams` — Create Team
+
+```json
+// Request
+{
+  "name": "Engineering",
+  "owner_id": "user_001",
+  "description": "Engineering automation team"
+}
+
+// Response (201)
+{
+  "team_id": "team_a1b2c3d4",
+  "name": "Engineering",
+  "description": "Engineering automation team",
+  "owner_id": "user_001",
+  "members": [
+    {"user_id": "user_001", "role": "owner", "joined_at": "2025-02-10T14:30:22+00:00"}
+  ],
+  "created_at": "2025-02-10T14:30:22+00:00",
+  "updated_at": "2025-02-10T14:30:22+00:00",
+  "settings": {
+    "default_max_turns": 200,
+    "auto_confirm": false,
+    "shared_sessions": true
+  }
+}
+```
+
+### `POST /teams/:id/members` — Add Member
+
+```json
+// Request
+{"user_id": "user_002", "role": "admin"}
+
+// Response (201) — full team object with new member added
+```
+
+### `POST /teams/:id/transfer-ownership`
+
+```json
+// Request
+{"current_owner_id": "user_001", "new_owner_id": "user_002"}
 ```
 
 ---
