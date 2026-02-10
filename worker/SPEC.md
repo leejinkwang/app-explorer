@@ -44,7 +44,7 @@ worker.py
 │   do_browser_click, do_browser_type, do_browser_select,
 │   do_browser_hover, do_browser_scroll, do_browser_press_key,
 │   do_browser_download, do_browser_scrape_links, do_browser_scrape_table,
-│   do_browser_fill_form, do_browser_submit_form
+│   do_browser_fill_form, do_browser_submit_form, do_browser_save_as_pdf
 │
 ├── File utilities
 │   upload_file_to_controller(filepath, session_id, filename)
@@ -133,12 +133,13 @@ worker.py
 
 ## Browser Commands — Task Mode (NEW)
 
-### File Download
+### File Download & PDF Export
 
 | action | params | return data |
 |--------|--------|-------------|
 | `browser_download` | `{url, filename?}` | `{filename, size_kb, uploaded}` |
 | `browser_download_batch` | `{urls: [{url, filename?}, ...]}` | `{downloaded, failed, total_size_kb, files: [...]}` |
+| `browser_save_as_pdf` | `{filename?, wait_for_selector?, margin?, format?, landscape?}` | `{filename, size_kb, pages, uploaded}` |
 
 **`browser_download` implementation**:
 1. Use `page.request` (Playwright API context) or `requests.get()` to download
@@ -151,6 +152,39 @@ worker.py
 1. For each URL: download → upload → delete temp
 2. Report progress in data: `{downloaded: 15, total: 47, current: "Vol1_Ch16.pdf"}`
 3. On individual failure: skip, add to `failed` list, continue
+
+**`browser_save_as_pdf` implementation**:
+1. Requires headless Chromium (Playwright `page.pdf()` only works in headless mode)
+2. If `wait_for_selector` provided: `page.wait_for_selector(selector)` before rendering
+3. Generate PDF: `page.pdf(path=tmp, format=format, margin=margin, landscape=landscape)`
+4. Default format: `"A4"`, default margin: `{top: "1cm", bottom: "1cm", left: "1cm", right: "1cm"}`
+5. Upload to Controller: `POST /upload` (multipart)
+6. Delete local temp file
+7. Return metadata including page count
+
+```python
+def do_browser_save_as_pdf(params):
+    filename = params.get("filename", f"page_{screenshot_count:03d}.pdf")
+    wait_sel = params.get("wait_for_selector")
+    fmt = params.get("format", "A4")
+    landscape = params.get("landscape", False)
+    margin = params.get("margin", {"top": "1cm", "bottom": "1cm", "left": "1cm", "right": "1cm"})
+
+    if wait_sel:
+        page.wait_for_selector(wait_sel, timeout=10000)
+
+    tmp_path = os.path.join(tempfile.gettempdir(), filename)
+    page.pdf(path=tmp_path, format=fmt, landscape=landscape, margin=margin,
+             print_background=True)
+
+    size_kb = os.path.getsize(tmp_path) // 1024
+    upload_file_to_controller(tmp_path, session_id, filename)
+    os.remove(tmp_path)
+
+    return {"filename": filename, "size_kb": size_kb, "uploaded": True}
+```
+
+**Note**: If browser was opened in headed mode, `browser_save_as_pdf` will reopen the current URL in a temporary headless context, render PDF, then close it.
 
 ### Link/Data Extraction
 
